@@ -59,3 +59,12 @@
   padding: 0;
   box-sizing: border-box;
 }
+/* Media query for mobile devices with a maximum width of 767px */
+@media only screen and (max-width: 767px) {
+  .container {
+    flex-direction: column; /* Change to a column layout for mobile */
+  }
+
+  .video-container, .chat-container {
+    width: 100%; /* Make both containers take up the full width */
+  }
