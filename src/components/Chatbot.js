@@ -18,7 +18,7 @@ const Chatbot = () => {
 
 const ChatContainer = styled.div`
   height: 80vh;
-  width: 50%;
+  width: 75%;
 `;
 
 export default Chatbot;

@@ -14,6 +14,8 @@ const Footer = () => {
 };
 
 const FooterContainer = styled.div`
+  // height: 5vh;
+  // bottom: 0;
   // display: 'flex',
   // flexDirection: 'column',
   // alignItems: 'flex-end',

@@ -76,25 +76,31 @@ const MainContent = () => {
     handleSendMessage(message);
   };
 
-  return (
-    <MainContainer>
+  if (messages.length === 0) {
+    return (<MainContainer>
       <div className="MainContent" style={MainContentStyle}>
         <div style={promptCardsContainerStyle}>
           {promptCards.map((card, index) => (
             <PromptCard key={index} text={card.text} onClick={() => handlePromptClick(card.text)} />
           ))}
         </div>
-
+        <ChatInput onSendMessage={handleSendMessage} />
+      </div>
+    </MainContainer>)
+  } else {
+    return (<MainContainer>
+      <div className="MainContent" style={MainContentStyle}>
         <div style={messagesContainerStyle}>
           {messages.map((msg, index) => (
             <ChatResponse key={index} text={msg.text} type={msg.type} />
           ))}
         </div>
         <ChatInput onSendMessage={handleSendMessage} />
+
       </div>
-    </MainContainer>
-    
-  );
+    </MainContainer>)
+
+  }
 };
 
 const MainContainer = styled.div`
@@ -103,16 +109,17 @@ const MainContainer = styled.div`
 `;
 
 const MainContentStyle = {
-  // display: 'flex',
+  display: 'flex',
   flexDirection: 'column',
   height: '100vh',
-  flex: 1,
+  margin: '0px 30px',
+  // flex: 1,
   overflowY: 'auto',
   // Additional styles
 };
 
 const promptCardsContainerStyle = {
-  // display: 'flex',
+  display: 'flex',
   // overflowY: 'auto',
   justifyContent: 'space-around', // Adjust as needed
   flexWrap: 'wrap', // Allows cards to wrap if there are many
@@ -121,8 +128,7 @@ const promptCardsContainerStyle = {
 
 const messagesContainerStyle = {
   overflowY: 'auto',
-  
-  maxHeight: 'calc(60vh - 30px)', // Adjust this value as needed
+  maxHeight: 'calc(90vh - 30px)', // Adjust this value as needed
   padding: '10px',
   margin: '10px 0',
 };
