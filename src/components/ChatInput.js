@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 // import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 // import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 
-const ChatInput = ({ onSendMessage }) => {
+const ChatInput = ({ onSendMessage, selectedPrompt }) => {
   const [message, setMessage] = useState('');
   const fileInputRef = useRef(null);
 //   const [isRecording, setIsRecording] = useState(false);
@@ -134,7 +134,7 @@ const ChatInput = ({ onSendMessage }) => {
         </div>
         <textarea
           ref={textareaRef}
-          value={message}
+          value={selectedPrompt !== null ? selectedPrompt : message} 
           onChange={handleChange}
           placeholder="Ask me anything or you can type here..."
           style={textareaStyle}
@@ -149,17 +149,18 @@ const formStyle = {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'flex-end',
-    position: 'fixed',
-    bottom: '6vh',
+    position: 'relative',
+    bottom: '1vh',
     left: '0',
     right: '5%',
 };
 
 const inputContainerStyle = {
     position: 'relative',
-    width: '70%',
+    width: '93%',
     display: 'flex',
     alignItems: 'center',
+    right: '5%'
 };
 
 const iconContainerStyle = {

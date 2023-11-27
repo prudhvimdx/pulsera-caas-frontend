@@ -24,7 +24,7 @@ const FooterContainer = styled.div`
   // left: '0',
   // right: '0.5%',
   position: 'relative',
-  width: '49%',
+  width: '100%',
 `;
 
 export default Footer;

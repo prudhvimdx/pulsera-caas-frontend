@@ -15,9 +15,7 @@ function App() {
 
 const AppContainer = styled.div`
   display: flex;
-  position: relative;
   height: 100vh;
-  overflow: hidden;
 `;
 
 export default App;
