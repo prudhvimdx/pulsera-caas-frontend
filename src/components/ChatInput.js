@@ -1,150 +1,158 @@
-// src/components/ChatInput.js
 import React, { useState, useRef, useEffect } from 'react';
-// Uncomment the following lines if you're using Font Awesome
-// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-// import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 
-const ChatInput = ({ onSendMessage, selectedPrompt }) => {
-  const [message, setMessage] = useState('');
-  const fileInputRef = useRef(null);
-//   const [isRecording, setIsRecording] = useState(false);
-  const speechRecognition = useRef(null); 
-  const isRecording = useRef(false);
-  const timeoutId = useRef(null);
-  const textareaRef = useRef(null);
-  const maxTextareaHeight = 200;
+const ChatInput = ({ onSendMessage, isLoading }) => {
+    const [message, setMessage] = useState('');
+    const fileInputRef = useRef(null);
+    const speechRecognition = useRef(null); 
+    const isRecording = useRef(false);
+    const timeoutId = useRef(null);
+    const textareaRef = useRef(null);
+    const [isMicOn, setIsMicOn] = useState(false); // New state for microphone status
+    const maxTextareaHeight = 200;
 
-  const handleChange = (e) => {
-    setMessage(e.target.value);
-  };
+    const handleChange = (e) => {
+        setMessage(e.target.value);
+    };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (message.trim()) {
-      onSendMessage(message);
-      setMessage('');
-    }
-  };
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        if (isMicOn) {
+          setIsMicOn(false);
+        }
+        if (message.trim()) {
+            onSendMessage(message);
+            setMessage('');
+        }
+    };
 
-  useEffect(() => {
-    startRecording();
-  }, []); // Empty dependency array to run only once on mount
+    const startRecording = () => {
+        if (isMicOn && 'webkitSpeechRecognition' in window) {
+            const SpeechRecognition = window.webkitSpeechRecognition;
+            speechRecognition.current = new SpeechRecognition();
+            speechRecognition.current.continuous = true;
+            speechRecognition.current.interimResults = true;
+            speechRecognition.current.lang = 'en-US';
 
-  const startRecording = () => {
-    if ('webkitSpeechRecognition' in window) {
-        const SpeechRecognition = window.webkitSpeechRecognition;
-        speechRecognition.current = new SpeechRecognition();
-        speechRecognition.current.continuous = true; // Change to true for continuous recognition
-        speechRecognition.current.interimResults = true;
-        speechRecognition.current.lang = 'en-US';
+            speechRecognition.current.onstart = () => {
+                isRecording.current = true;
+            };
 
-        speechRecognition.current.onstart = () => {
-            isRecording.current = true;
-        };
+            speechRecognition.current.onresult = (event) => {
+                const transcript = Array.from(event.results)
+                .map(result => result[0])
+                .map(result => result.transcript)
+                .join('');
 
-        speechRecognition.current.onresult = (event) => {
-            const transcript = Array.from(event.results)
-            .map(result => result[0])
-            .map(result => result.transcript)
-            .join('');
+                setMessage(transcript);
+                restartRecordingAfterPause();
+            };
 
-            setMessage(transcript);
-            restartRecordingAfterPause(); // Restart recording after a pause in speech
-        };
+            speechRecognition.current.onerror = (event) => {
+                console.error('Speech recognition error', event.error);
+            };
 
-        speechRecognition.current.onerror = (event) => {
-            console.error('Speech recognition error', event.error);
-        };
+            speechRecognition.current.start();
+        }
+    };
 
-        speechRecognition.current.start();
-    }
-  };
+    const restartRecordingAfterPause = () => {
+        clearTimeout(timeoutId.current);
+        timeoutId.current = setTimeout(() => {
+            if (isRecording.current) {
+                speechRecognition.current.stop();
+                startRecording();
+            }
+        }, 2000);
+    };
 
-  const restartRecordingAfterPause = () => {
-    clearTimeout(timeoutId.current);
-    timeoutId.current = setTimeout(() => {
-      if (isRecording.current) {
-        speechRecognition.current.stop(); // Stop the current recording
-        startRecording(); // Start a new recording
-      }
-    }, 2000); // 2 seconds pause
-  };
-
-// Cleanup on unmount
     useEffect(() => {
-        return () => {
-        if (speechRecognition.current) {
+        if (isMicOn) {
+            startRecording();
+        } else if (speechRecognition.current) {
             speechRecognition.current.stop();
         }
-        clearTimeout(timeoutId.current);
+        return () => {
+            if (speechRecognition.current) {
+                speechRecognition.current.stop();
+            }
+            clearTimeout(timeoutId.current);
         };
-    }, []);
+    }, [isMicOn]);
 
-  const handleFileClick = () => {
-    fileInputRef.current.click(); // Trigger the file input click event
-  };
+    const handleFileClick = () => {
+        fileInputRef.current.click();
+    };
 
-  const handleFileChange = (e) => {
-    // Handle file upload logic here
-    const file = e.target.files[0];
-    console.log(file); // Just logging the file for now
-  };
-
-  // Function to calculate textarea height
-//   const calculateHeight = (text) => {
-//     const numberOfLineBreaks = (text.match(/\n/g) || []).length;
-//     // Minimum height: 30px, Line height: 20px, Padding: 10px
-//     const newHeight = Math.max(30, numberOfLineBreaks * 20 + 10) + 'px';
-//     return newHeight;
-//   };
-
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        console.log(file);
+    };
 
     useEffect(() => {
         adjustTextareaHeight();
     }, [message]);
 
-  const adjustTextareaHeight = () => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = 'auto'; // Reset height to recalculate
-      const scrollHeight = textarea.scrollHeight; // Set height to scroll height
-      if (scrollHeight > maxTextareaHeight) {
-        textarea.style.overflowY = 'auto'; // Enable vertical scrollbar
-        textarea.style.height = maxTextareaHeight + 'px'; // Limit height to maxTextareaHeight
-      } else {
-        textarea.style.overflowY = 'hidden'; // Disable vertical scrollbar
-        textarea.style.height = scrollHeight + 'px'; // Adjust height to content
-      }
-    }
-  };
+    const adjustTextareaHeight = () => {
+        const textarea = textareaRef.current;
+        if (textarea) {
+            textarea.style.height = 'auto';
+            const scrollHeight = textarea.scrollHeight;
+            if (scrollHeight > maxTextareaHeight) {
+                textarea.style.overflowY = 'auto';
+                textarea.style.height = maxTextareaHeight + 'px';
+            } else {
+                textarea.style.overflowY = 'hidden';
+                textarea.style.height = scrollHeight + 'px';
+            }
+        }
+    };
 
-  return (
-    <form onSubmit={handleSubmit} style={formStyle}>
-      <div style={inputContainerStyle}>
-        <div style={iconContainerStyle}>
-            <button type="button" onClick={handleFileClick} style={attachmentStyle} >
-            {/* Replace with your upload icon */}
-            <img src="/attachment.png" alt="Upload" style={{ width: '20px', height: '20px' }} />
-            </button><input type="file" ref={fileInputRef}
-                onChange={handleFileChange} style={{ display: 'none' }} // Hide the actual file input
-            />
-            <button type="submit" style={sendButtonStyle}>
-                <img src="/send_buttton.png" alt="Send" style={{ width: '20px', height: '20px' }} />
-            </button>
-        </div>
-        <textarea
-          ref={textareaRef}
-          value={selectedPrompt !== null ? selectedPrompt : message} 
-          onChange={handleChange}
-          placeholder="Ask me anything or you can type here..."
-          style={textareaStyle}
-        //   style={{ ...textareaStyle, height: calculateHeight(message) }} // Apply dynamic height here
-        ></textarea>
-        
-      </div>
-    </form>
-  );
+    const toggleMic = () => {
+      if (isMicOn) {
+        setIsMicOn(false);
+        if (speechRecognition.current) {
+            speechRecognition.current.stop();
+            isRecording.current = false;
+            // Send the recorded message if it's not empty
+            if (message.trim()) {
+                onSendMessage(message);
+                setMessage('');
+            }
+        }
+      } else {
+        // Turning on the microphone
+        setIsMicOn(true);
+      }
+    };
+
+    return (
+        <form onSubmit={handleSubmit} style={formStyle}>
+            <div style={inputContainerStyle}>
+                <div style={iconContainerStyle}>
+                    <button type="button" onClick={toggleMic} style={micButtonStyle}>
+                        {isMicOn ? <img src="/microphone_on.png" alt="Mic On" style={{ width: '20px', height: '20px' }} /> : <img src="/microphone_off.png" alt="Mic Off" style={{ width: '20px', height: '20px' }} />}
+                    </button>
+                    <button type="button" onClick={handleFileClick} style={attachmentStyle}>
+                        <img src="/attachment.png" alt="Upload" style={{ width: '20px', height: '20px' }} />
+                    </button>
+                    <input type="file" ref={fileInputRef} onChange={handleFileChange} style={{ display: 'none' }} />
+                    <button type="submit" style={sendButtonStyle} disabled={isLoading}>
+                        {isLoading ? <img src="/loading.gif" alt="Loading..." style={{ width: '20px', height: '20px' }} /> : 
+                        <img src="/send_buttton.png" alt="Send" style={{ width: '20px', height: '20px' }} />} 
+                    </button>
+                </div>
+                <textarea
+                    ref={textareaRef}
+                    value={message} 
+                    onChange={handleChange}
+                    placeholder="Ask me anything or you can type here..."
+                    style={textareaStyle}
+                ></textarea>
+            </div>
+        </form>
+    );
 };
+
 const formStyle = {
     display: 'flex',
     flexDirection: 'column',
@@ -165,7 +173,7 @@ const inputContainerStyle = {
 
 const iconContainerStyle = {
     display: 'flex',
-    alignItems: 'center', // Center vertically
+    alignItems: 'center',
 };
 
 const textareaStyle = {
@@ -196,6 +204,16 @@ const attachmentStyle = {
     background: 'transparent',
     border: 'none',
     cursor: 'pointer'
+};
+
+const micButtonStyle = {
+  position: 'absolute',
+  right: '50px',
+  bottom: '1px',
+  transform: 'translateY(-50%)',
+  background: 'transparent',
+  border: 'none',
+  cursor: 'pointer',
 };
 
 export default ChatInput;

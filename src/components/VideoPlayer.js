@@ -8,7 +8,7 @@ const VideoPlayer = () => {
         <img width='100%' src="/mdxblocks_black_logo.webp" alt="MDxBlocks Logo" />  
       </div>
       <video width="100%" controls autoPlay>
-        <source src="/pulsera_bot_video.mp4" type="video/mp4" />
+        <source src="/bot_intro_video.mp4" type="video/mp4" />
         Your browser does not support the video tag.
       </video>
     </VideoContainer>

@@ -1,16 +1,19 @@
 // src/components/ChatResponse.js
 import React from 'react';
+import { marked } from 'marked';
 
 const ChatResponse = ({ text }) => {
+  const markdownToHtml = marked(text);
+
   return (
-    <div style={responseStyle}>
-      {text}
-    </div>
+    <div style={responseStyle} dangerouslySetInnerHTML={{ __html: markdownToHtml }} />
+      // {/* {text} */}
+      
+    // </div>
   );
 };
 
 const responseStyle = {
-//   height: '80vh',
   width: '100%',
   margin: '10px 0',
   padding: '10px',
